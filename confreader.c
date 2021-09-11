@@ -63,7 +63,7 @@ enum ConfReturn ConfParamRead(char *filename, struct ConfParam paramList[])
 
 			if (feof(fp))
 			{
-				goto out;
+				break;
 			}
 
 			continue;
@@ -98,7 +98,6 @@ enum ConfReturn ConfParamRead(char *filename, struct ConfParam paramList[])
 			}
 		}
 	}
-out:
 
 	(void)fclose(fp);
 	return ConfReturnOK;
