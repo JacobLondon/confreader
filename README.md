@@ -1,7 +1,7 @@
 # Conf Reader
 Read simple, non-nested configuration files with `key=value` pairs. Note there is some robustness in spacing: `key = value` is also acceptable. Note writing back the configuration is available, but will clobber comments left in the file.
 
-Parameters will be read from the file specified, defaults will be used if: the file can't be read, a `key` is missing, a line is too long, the `value` is an invalid format, etc... Note that to read, the filename may be NULL, defaults will be used for all params. There SHALL be no bailout half-way through reading params.
+Parameters will be read from the file specified, defaults will be used if: the file can't be read, the filename is NULL, a `key` is missing, a line is too long, the `value` is an invalid format, etc... There SHALL be no bailout half-way through reading params.
 ```C
 
 /* - header - */
