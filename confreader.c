@@ -10,6 +10,13 @@ static void stringEatFirstWhitespace(char *string);
 
 enum ConfReturn ConfParamRead(char *filename, struct ConfParam paramList[])
 {
+	return ConfParamReadFuncs(filename, paramList, NULL, NULL);
+}
+
+enum ConfReturn ConfParamReadFuncs(char *filename, struct ConfParam paramList[],
+	void (*onSuccess)(char *key, char *value),
+	void (*onDefault)(char *key, char *value))
+{
 	char line[1024];
 	int lineLen;
 	FILE *fp;
@@ -95,6 +102,22 @@ enum ConfReturn ConfParamRead(char *filename, struct ConfParam paramList[])
 			if (strncmp(start, paramList[i].name, (size_t)(equals - start)) == 0)
 			{
 				(void)paramReadHelper(&paramList[i], value);
+				if (paramList[i]._isDefault)
+				{
+					if (onDefault != NULL)
+					{
+						/** TODO: Need to data converted to string fmt, not the invalid str... */
+						onDefault(paramList[i].name, value);
+					}
+				}
+				else
+				{
+					if (onSuccess != NULL)
+					{
+						onSuccess(paramList[i].name, value);
+					}
+				}
+				break;
 			}
 		}
 	}
@@ -193,6 +216,7 @@ static int paramReadHelper(struct ConfParam *param, char *value)
 	{
 	default_param:
 		(void)memcpy(param->param, param->paramDefault, param->paramLength);
+		param->_isDefault = 1;
 		return -1;
 	}
 
@@ -258,6 +282,7 @@ static int paramReadHelper(struct ConfParam *param, char *value)
 		return 2;
 	}
 
+	param->_isDefault = 0;
 	return 0;
 }
 

@@ -25,6 +25,7 @@ struct ConfParam
 		ConfTypeBOOL,
 		ConfTypeSTRING,
 	} type;
+	int _isDefault;
 };
 
 #define CONF_PARAM(TYPE, UNQUOTED_NAME, CONFIG, DEFAULT) \
@@ -34,6 +35,7 @@ struct ConfParam
 	.paramDefault = &DEFAULT.UNQUOTED_NAME, \
 	.paramLength = sizeof(CONFIG.UNQUOTED_NAME), \
 	.type = TYPE, \
+	._isDefault = 0, \
 }
 
 #define CONF_PARAM_END() {NULL, NULL, NULL, 0, 0}
@@ -45,6 +47,14 @@ struct ConfParam
  *    File to read, is nullable
  */
 enum ConfReturn ConfParamRead(char *filename, struct ConfParam paramList[]);
+
+/**
+ * Same as \ref ConfParamRead but perform a callback when either the param is
+ * successfully read or the default is used
+ */
+enum ConfReturn ConfParamReadFuncs(char *filename, struct ConfParam paramList[],
+	void (*onSuccess)(char *key, char *value),
+	void (*onDefault)(char *key, char *value));
 
 /**
  * Write parameters from \a paramList into \a filename
