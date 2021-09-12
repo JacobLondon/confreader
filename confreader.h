@@ -38,7 +38,7 @@ struct ConfParam
 	._isDefault = 0, \
 }
 
-#define CONF_PARAM_END() {NULL, NULL, NULL, 0, 0}
+#define CONF_PARAM_END() {NULL, NULL, NULL, 0, 0, 0}
 
 /**
  * Read parameters from a \a filename into \a paramList while first loading defaults

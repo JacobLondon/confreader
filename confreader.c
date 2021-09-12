@@ -5,6 +5,7 @@
 #include "confreader.h"
 
 static int paramReadHelper(struct ConfParam *param, char *value);
+static void paramValueIntoBuffer(struct ConfParam *param, char *valout, size_t outsize);
 static char *stringFindStart(char *string);
 static void stringEatFirstWhitespace(char *string);
 
@@ -76,6 +77,12 @@ enum ConfReturn ConfParamReadFuncs(char *filename, struct ConfParam paramList[],
 			continue;
 		}
 
+		/* get ridda CRLF */
+		if ((lineLen - 1 >= 0) && (line[lineLen - 1] == '\r'))
+		{
+			line[lineLen - 1] = '\0';
+		}
+
 		start = stringFindStart(line);
 
 		/* end */
@@ -102,22 +109,27 @@ enum ConfReturn ConfParamReadFuncs(char *filename, struct ConfParam paramList[],
 			if (strncmp(start, paramList[i].name, (size_t)(equals - start)) == 0)
 			{
 				(void)paramReadHelper(&paramList[i], value);
-				if (paramList[i]._isDefault)
+
+				/* We have the read value here, gotta call here */
+				if (!paramList[i]._isDefault && onSuccess != NULL)
 				{
-					if (onDefault != NULL)
-					{
-						/** TODO: Need to data converted to string fmt, not the invalid str... */
-						onDefault(paramList[i].name, value);
-					}
-				}
-				else
-				{
-					if (onSuccess != NULL)
-					{
-						onSuccess(paramList[i].name, value);
-					}
+					onSuccess((char *)paramList[i].name, value);
 				}
 				break;
+			}
+		}
+	}
+
+	/* must go after as above only calls those items which are present */
+	if (onDefault != NULL)
+	{
+		for (i = 0; paramList[i].name != NULL; i++)
+		{
+			/* already called onSuccess if applicable, call default here */
+			if (paramList[i]._isDefault)
+			{
+				paramValueIntoBuffer(&paramList[i], line, sizeof(line));
+				onDefault((char *)paramList[i].name, line);
 			}
 		}
 	}
@@ -187,6 +199,33 @@ const char *ConfReturnString(enum ConfReturn cr)
 	case ConfReturnBAD_FORMAT:     return "Bad format definition";
 	}
 	return "Unknown";
+}
+
+static void paramValueIntoBuffer(struct ConfParam *param, char *valout, size_t outsize)
+{
+	if (!param || !valout)
+	{
+		return;
+	}
+
+	switch (param->type)
+	{
+	case ConfTypeINT:
+		(void)snprintf(valout, outsize, "%d", *(int *)param->param);
+		break;
+	case ConfTypeDOUBLE:
+		(void)snprintf(valout, outsize, "%lf", *(double *)param->param);
+		break;
+	case ConfTypeBOOL:
+		(void)snprintf(valout, outsize, "%d", *(int *)param->param);
+		break;
+	case ConfTypeSTRING:
+		(void)snprintf(valout, outsize, "%s", (char *)param->param);
+		break;
+	default:
+		valout[0] = '\0';
+		break;
+	}
 }
 
 /**

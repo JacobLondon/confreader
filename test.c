@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "confreader.h"
 
-struct {
+static struct {
 	int a;
 	char b[32];
 	int c;
@@ -17,7 +17,7 @@ struct {
 	.boolean = 1,
 };
 
-struct ConfParam paramList[] = {
+static struct ConfParam paramList[] = {
 	CONF_PARAM(ConfTypeINT,    a,        myConf, myConfDefault),
 	CONF_PARAM(ConfTypeSTRING, b,        myConf, myConfDefault),
 	CONF_PARAM(ConfTypeINT,    c,        myConf, myConfDefault),
@@ -27,13 +27,18 @@ struct ConfParam paramList[] = {
 	CONF_PARAM_END(),
 };
 
+static void successFunc(char *key, char *value);
+static void defaultFunc(char *key, char *value);
+
 int main(void)
 {
 	enum ConfReturn cr;
 
-	cr = ConfParamRead("test.conf", paramList);
-	printf("Result: %s\n", ConfReturnString(cr));
+	//cr = ConfParamRead("test.conf", paramList);
+	cr = ConfParamReadFuncs("test.conf", paramList, successFunc, defaultFunc);
 
+	printf("\n\n");
+	printf("Result: %s\n", ConfReturnString(cr));
 	printf("a=%d\n", myConf.a);
 	printf("b=%s\n", myConf.b);
 	printf("c=%d\n", myConf.c);
@@ -42,4 +47,14 @@ int main(void)
 	printf("boolean=%d\n", myConf.boolean);
 
 	return 0;
+}
+
+static void successFunc(char *key, char *value)
+{
+	printf("Read: %s = %s\n", key, value);
+}
+
+static void defaultFunc(char *key, char *value)
+{
+	printf("Dflt: %s = %s\n", key, value);
 }
