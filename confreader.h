@@ -53,8 +53,8 @@ enum ConfReturn ConfParamRead(char *filename, struct ConfParam paramList[]);
  * successfully read or the default is used
  */
 enum ConfReturn ConfParamReadFuncs(char *filename, struct ConfParam paramList[],
-	void (*onSuccess)(char *key, char *value),
-	void (*onDefault)(char *key, char *value));
+	void (*onSuccess)(const char *key, char *value),
+	void (*onDefault)(const char *key, char *value));
 
 /**
  * Write parameters from \a paramList into \a filename

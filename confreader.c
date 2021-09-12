@@ -15,8 +15,8 @@ enum ConfReturn ConfParamRead(char *filename, struct ConfParam paramList[])
 }
 
 enum ConfReturn ConfParamReadFuncs(char *filename, struct ConfParam paramList[],
-	void (*onSuccess)(char *key, char *value),
-	void (*onDefault)(char *key, char *value))
+	void (*onSuccess)(const char *key, char *value),
+	void (*onDefault)(const char *key, char *value))
 {
 	char line[1024];
 	int lineLen;
@@ -109,27 +109,25 @@ enum ConfReturn ConfParamReadFuncs(char *filename, struct ConfParam paramList[],
 			if (strncmp(start, paramList[i].name, (size_t)(equals - start)) == 0)
 			{
 				(void)paramReadHelper(&paramList[i], value);
-
-				/* We have the read value here, gotta call here */
-				if (!paramList[i]._isDefault && onSuccess != NULL)
-				{
-					onSuccess((char *)paramList[i].name, value);
-				}
 				break;
 			}
 		}
 	}
 
-	/* must go after as above only calls those items which are present */
-	if (onDefault != NULL)
+	/* perform callbacks on params in given order, note the above skips default params */
+	if (onDefault != NULL || onSuccess != NULL)
 	{
 		for (i = 0; paramList[i].name != NULL; i++)
 		{
-			/* already called onSuccess if applicable, call default here */
-			if (paramList[i]._isDefault)
+			if (paramList[i]._isDefault && onDefault != NULL)
 			{
 				paramValueIntoBuffer(&paramList[i], line, sizeof(line));
-				onDefault((char *)paramList[i].name, line);
+				onDefault(paramList[i].name, line);
+			}
+			else if (!paramList[i]._isDefault && onSuccess != NULL)
+			{
+				paramValueIntoBuffer(&paramList[i], line, sizeof(line));
+				onSuccess(paramList[i].name, line);
 			}
 		}
 	}
@@ -201,6 +199,9 @@ const char *ConfReturnString(enum ConfReturn cr)
 	return "Unknown";
 }
 
+/**
+ * Copy the param as a string into \a valout
+ */
 static void paramValueIntoBuffer(struct ConfParam *param, char *valout, size_t outsize)
 {
 	if (!param || !valout)
@@ -229,7 +230,10 @@ static void paramValueIntoBuffer(struct ConfParam *param, char *valout, size_t o
 }
 
 /**
- * @return
+ * \param value
+ *    The string value to attempt setting the param to, nullable = default value
+ * 
+ * \return
  *    >0 failure
  *     0 loaded parameter
  *    -1 loaded default parameter

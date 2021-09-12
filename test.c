@@ -27,8 +27,8 @@ static struct ConfParam paramList[] = {
 	CONF_PARAM_END(),
 };
 
-static void successFunc(char *key, char *value);
-static void defaultFunc(char *key, char *value);
+static void successFunc(const char *key, char *value);
+static void defaultFunc(const char *key, char *value);
 
 int main(void)
 {
@@ -49,12 +49,12 @@ int main(void)
 	return 0;
 }
 
-static void successFunc(char *key, char *value)
+static void successFunc(const char *key, char *value)
 {
 	printf("Read: %s = %s\n", key, value);
 }
 
-static void defaultFunc(char *key, char *value)
+static void defaultFunc(const char *key, char *value)
 {
 	printf("Dflt: %s = %s\n", key, value);
 }
