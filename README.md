@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 	cr = ConfParamRead("test.conf", paramList);
 	if (cr != ConfReturnOK)
 	{
-		/* a paramter was NULL or no permission to access the file */
+		/* a parameter was NULL or no permission to access the file */
 	}
 
 	/* - snip - */
